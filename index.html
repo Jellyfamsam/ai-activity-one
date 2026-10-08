@@ -235,14 +235,26 @@
     }
 
     .message-banner.success {
-      background: var(--success-dim);
-      border: 1px solid var(--success);
-      color: #72f2b4;
+      background: linear-gradient(135deg, rgba(62, 207, 142, 0.2) 0%, rgba(212, 175, 55, 0.15) 100%);
+      border: 1.5px solid var(--success);
+      color: #9affcf;
+      padding: 1.25rem 1.4rem;
+      box-shadow: 0 6px 24px rgba(62, 207, 142, 0.25), 0 0 16px rgba(212, 175, 55, 0.15);
+      animation: bannerSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes bannerSlideDown {
+      from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .message-banner .icon {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       line-height: 1;
+    }
+
+    .message-banner.success .icon {
+      font-size: 2rem;
     }
 
     .message-banner .content {
@@ -911,6 +923,268 @@
     .reset-demo-link:hover {
       color: var(--text-secondary);
     }
+
+    /* ==========================================================================
+       Confirmation Screen / Modal Styles
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 10, 14, 0.86);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      animation: modalFadeIn 0.25s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-card {
+      background: #191d24;
+      border: 1px solid var(--accent-gold);
+      border-radius: var(--radius-lg);
+      max-width: 520px;
+      width: 100%;
+      padding: 2rem 1.5rem;
+      position: relative;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(212, 175, 55, 0.2);
+      text-align: center;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: modalPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalPopIn {
+      from { opacity: 0; transform: scale(0.92) translateY(15px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 0.85rem;
+      right: 0.85rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      transition: var(--transition);
+    }
+
+    .modal-close-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+      border-color: var(--text-muted);
+    }
+
+    .modal-success-badge {
+      width: 68px;
+      height: 68px;
+      margin: 0 auto 1.15rem auto;
+      border-radius: 50%;
+      background: var(--success-dim);
+      border: 2px solid var(--success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 25px rgba(62, 207, 142, 0.4);
+      animation: badgePulse 2s infinite ease-in-out;
+    }
+
+    @keyframes badgePulse {
+      0% { transform: scale(1); box-shadow: 0 0 20px rgba(62, 207, 142, 0.35); }
+      50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(62, 207, 142, 0.6); }
+      100% { transform: scale(1); box-shadow: 0 0 20px rgba(62, 207, 142, 0.35); }
+    }
+
+    .badge-icon {
+      font-size: 2.1rem;
+      color: var(--success);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .modal-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 0.3rem;
+      letter-spacing: -0.01em;
+    }
+
+    .modal-subtitle {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.35rem;
+    }
+
+    /* Barber Ticket Styling */
+    .ticket-card {
+      background: #12151b;
+      border: 1px dashed var(--accent-gold);
+      border-radius: var(--radius-md);
+      text-align: left;
+      overflow: hidden;
+      margin-bottom: 1.35rem;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .ticket-header {
+      background: rgba(212, 175, 55, 0.12);
+      border-bottom: 1px dashed var(--border-color);
+      padding: 0.65rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ticket-header-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--accent-gold);
+    }
+
+    .ticket-code {
+      font-family: monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .ticket-body {
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .ticket-row-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .ticket-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .ticket-val-lg {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .ticket-val-sub {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+
+    .ticket-barber-pill {
+      background: var(--accent-gold);
+      color: #111;
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: var(--radius-sm);
+      display: inline-block;
+      text-align: right;
+    }
+
+    .ticket-divider {
+      border-top: 1px dashed var(--border-color);
+      margin: 0.2rem 0;
+    }
+
+    .ticket-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .ticket-val {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .ticket-val-gold {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent-gold);
+    }
+
+    .ticket-pref-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem;
+      font-size: 0.82rem;
+    }
+
+    .ticket-pref-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .ticket-pref-notes {
+      color: #ffc97a;
+      font-style: italic;
+      font-size: 0.8rem;
+    }
+
+    .ticket-footer-note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      padding-top: 0.35rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      line-height: 1.4;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .appointment-card.newly-added {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+      animation: cardHighlightPulse 2.5s infinite alternate ease-in-out;
+    }
+
+    @keyframes cardHighlightPulse {
+      0% { border-color: var(--accent-gold); box-shadow: 0 0 12px rgba(212, 175, 55, 0.3); }
+      100% { border-color: #ffd769; box-shadow: 0 0 28px rgba(212, 175, 55, 0.7); }
+    }
   </style>
 </head>
 <body>
@@ -1235,6 +1509,89 @@
     </section>
   </main>
 
+  <!-- ==========================================================================
+       CONFIRMATION SCREEN / MODAL DIALOG
+       ========================================================================== -->
+  <div id="confirmationModal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <button type="button" class="modal-close-btn" id="modalCloseBtn" aria-label="Close confirmation">&times;</button>
+      
+      <!-- Celebratory Success Badge -->
+      <div class="modal-success-badge">
+        <span class="badge-icon">✓</span>
+      </div>
+
+      <h2 id="modalTitle" class="modal-title">Chair Reserved! You're All Set!</h2>
+      <p class="modal-subtitle">Your appointment has been secured at <strong>The Master's Chair Barber Co.</strong></p>
+
+      <!-- Barber Ticket Card -->
+      <div class="ticket-card">
+        <div class="ticket-header">
+          <span class="ticket-header-title">💈 APPOINTMENT PASS</span>
+          <span class="ticket-code" id="modalTicketCode">#MC-0000</span>
+        </div>
+
+        <div class="ticket-body">
+          <div class="ticket-row-main">
+            <div>
+              <div class="ticket-label">Client</div>
+              <div class="ticket-val-lg" id="modalClientName">Client Name</div>
+              <div class="ticket-val-sub" id="modalClientPhone">Phone Number</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="ticket-label">Barber</div>
+              <div class="ticket-barber-pill" id="modalBarberName">Marcus Vance</div>
+            </div>
+          </div>
+
+          <div class="ticket-divider"></div>
+
+          <div class="ticket-grid">
+            <div>
+              <div class="ticket-label">Date</div>
+              <div class="ticket-val" id="modalDate">Friday, Oct 9, 2026</div>
+            </div>
+            <div>
+              <div class="ticket-label">Time Slot</div>
+              <div class="ticket-val-gold" id="modalTime">10:00 AM</div>
+            </div>
+            <div>
+              <div class="ticket-label">Service</div>
+              <div class="ticket-val" id="modalService">Classic Haircut</div>
+            </div>
+            <div>
+              <div class="ticket-label">Duration & Total</div>
+              <div class="ticket-val" id="modalDurationPrice">30 mins • $35</div>
+            </div>
+          </div>
+
+          <div id="modalPreferencesWrapper" class="ticket-pref-box" style="display: none;">
+            <div class="ticket-label" style="margin-bottom: 0.35rem;">Client Preferences & Notes</div>
+            <div class="ticket-pref-tags" id="modalPrefTags"></div>
+            <div class="ticket-pref-notes" id="modalPrefNotes"></div>
+          </div>
+
+          <div class="ticket-footer-note">
+            ℹ️ <strong>Shop Tip:</strong> Please arrive ~5 minutes prior to your chair time. Payment is handled in-person after your haircut.
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" id="modalViewAgendaBtn">
+          📅 View on Barber Schedule
+        </button>
+        <button type="button" class="btn btn-secondary" id="modalBookAnotherBtn">
+          ✂️ Book Another Appointment
+        </button>
+        <button type="button" class="btn btn-secondary" id="modalDownloadIcsBtn" style="font-size: 0.85rem; padding: 0.65rem;">
+          📥 Add to Calendar (.ics)
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer>
     <div style="max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem;">
@@ -1353,7 +1710,25 @@
         hoursTableBody: document.getElementById('hoursTableBody'),
         
         // Reset Demo
-        resetDemoDataBtn: document.getElementById('resetDemoDataBtn')
+        resetDemoDataBtn: document.getElementById('resetDemoDataBtn'),
+
+        // Confirmation Modal Elements
+        confirmationModal: document.getElementById('confirmationModal'),
+        modalCloseBtn: document.getElementById('modalCloseBtn'),
+        modalTicketCode: document.getElementById('modalTicketCode'),
+        modalClientName: document.getElementById('modalClientName'),
+        modalClientPhone: document.getElementById('modalClientPhone'),
+        modalBarberName: document.getElementById('modalBarberName'),
+        modalDate: document.getElementById('modalDate'),
+        modalTime: document.getElementById('modalTime'),
+        modalService: document.getElementById('modalService'),
+        modalDurationPrice: document.getElementById('modalDurationPrice'),
+        modalPreferencesWrapper: document.getElementById('modalPreferencesWrapper'),
+        modalPrefTags: document.getElementById('modalPrefTags'),
+        modalPrefNotes: document.getElementById('modalPrefNotes'),
+        modalViewAgendaBtn: document.getElementById('modalViewAgendaBtn'),
+        modalBookAnotherBtn: document.getElementById('modalBookAnotherBtn'),
+        modalDownloadIcsBtn: document.getElementById('modalDownloadIcsBtn')
       };
 
       /* ------------------------------------------------------------------------
@@ -1869,11 +2244,12 @@
 
         dom.agendaAppointmentsList.innerHTML = list.map(appt => {
           const isCompleted = appt.status === 'completed';
+          const isNewlyAdded = state.lastBookedApptId === appt.id;
           const prefChipsHtml = (appt.preferences || []).map(p => `<span class="appt-pref-chip">${p}</span>`).join('');
           const notesHtml = appt.specialNotes ? `<div style="font-size: 0.8rem; color: #ffc97a; margin-top: 0.2rem;">📝 "${appt.specialNotes}"</div>` : '';
 
           return `
-            <div class="appointment-card ${isCompleted ? 'completed' : ''}" data-id="${appt.id}">
+            <div class="appointment-card ${isCompleted ? 'completed' : ''} ${isNewlyAdded ? 'newly-added' : ''}" data-id="${appt.id}">
               <div class="appt-time-badge">
                 <div class="appt-time">${formatTimeDisplay(appt.time)}</div>
                 <div class="appt-duration">${appt.duration} min service</div>
@@ -1882,6 +2258,7 @@
               <div class="appt-details">
                 <div class="appt-client-name">
                   <span>${appt.clientName}</span>
+                  ${isNewlyAdded ? '<span style="font-size: 0.72rem; background: var(--accent-gold); color: #111; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">NEW BOOKING</span>' : ''}
                   ${isCompleted ? '<span style="font-size: 0.72rem; color: var(--success); font-weight: 700;">✓ DONE</span>' : ''}
                 </div>
                 <div>
@@ -2107,11 +2484,11 @@
         state.appointments.push(newAppt);
         saveAppointments();
 
-        // Success Feedback
+        // Prominent Success Banner
         showBanner('success', `
           🎉 <strong>Chair Confirmed for ${name}!</strong><br>
           ${selectedService.name} with <strong>${assignedBarber}</strong> on <strong>${formatDateDisplay(date)}</strong> at <strong>${formatTimeDisplay(timeSlot)}</strong>.
-          We have saved your preferences!
+          <br><small style="color: #9affcf;">An official appointment pass has been generated below.</small>
         `, '💈');
 
         // Reset form selections
@@ -2128,8 +2505,90 @@
         updateSummaryUI();
         renderAgendaView();
 
-        // Scroll to top of window to see confirmation
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Launch the Dedicated Confirmation Screen / Modal Pass
+        openConfirmationModal(newAppt);
+      }
+
+      /* ------------------------------------------------------------------------
+         10.5 CONFIRMATION MODAL & CALENDAR EXPORT
+         ------------------------------------------------------------------------ */
+      function openConfirmationModal(appt) {
+        state.lastBookedApptId = appt.id;
+        state.currentConfirmedAppt = appt;
+
+        const rawCode = appt.id.replace('appt_', '').slice(-4);
+        const ticketCode = '#MC-' + (rawCode || Math.floor(1000 + Math.random() * 9000));
+        dom.modalTicketCode.textContent = ticketCode;
+        dom.modalClientName.textContent = appt.clientName;
+        dom.modalClientPhone.textContent = `📞 ${appt.clientPhone}`;
+        dom.modalBarberName.textContent = `💈 ${appt.barberName}`;
+        dom.modalDate.textContent = formatDateDisplay(appt.date);
+        dom.modalTime.textContent = formatTimeDisplay(appt.time);
+        dom.modalService.textContent = appt.serviceName;
+        dom.modalDurationPrice.textContent = `${appt.duration} mins • $${appt.price}`;
+
+        // Preferences & notes
+        const hasPrefs = (appt.preferences && appt.preferences.length > 0) || Boolean(appt.specialNotes);
+        if (hasPrefs) {
+          dom.modalPreferencesWrapper.style.display = 'block';
+          dom.modalPrefTags.innerHTML = (appt.preferences || []).map(p => `<span class="appt-pref-chip">${p}</span>`).join('');
+          dom.modalPrefNotes.textContent = appt.specialNotes ? `Note: "${appt.specialNotes}"` : '';
+        } else {
+          dom.modalPreferencesWrapper.style.display = 'none';
+          dom.modalPrefTags.innerHTML = '';
+          dom.modalPrefNotes.textContent = '';
+        }
+
+        dom.confirmationModal.classList.add('active');
+        dom.confirmationModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeConfirmationModal() {
+        dom.confirmationModal.classList.remove('active');
+        dom.confirmationModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+
+      function downloadCalendarEvent(appt) {
+        if (!appt) return;
+
+        const [year, month, day] = appt.date.split('-').map(Number);
+        const [hours, minutes] = appt.time.split(':').map(Number);
+        
+        const start = new Date(year, month - 1, day, hours, minutes);
+        const end = new Date(start.getTime() + (appt.duration || 30) * 60000);
+
+        function toIcsFormat(d) {
+          return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        }
+
+        const icsData = [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'PRODID:-//The Masters Chair Barber Co//EN',
+          'CALSCALE:GREGORIAN',
+          'BEGIN:VEVENT',
+          `UID:${appt.id}@masterschair.local`,
+          `DTSTAMP:${toIcsFormat(new Date())}`,
+          `DTSTART:${toIcsFormat(start)}`,
+          `DTEND:${toIcsFormat(end)}`,
+          `SUMMARY:${appt.serviceName} - The Master's Chair Barber Co`,
+          `DESCRIPTION:Appointment with ${appt.barberName} for ${appt.clientName}. Notes: ${appt.specialNotes || 'None'}`,
+          'LOCATION:The Master\'s Chair Barber Co.',
+          'STATUS:CONFIRMED',
+          'END:VEVENT',
+          'END:VCALENDAR'
+        ].join('\r\n');
+
+        const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Barber-Appointment-${appt.date}.ics`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
       }
 
       /* ------------------------------------------------------------------------
@@ -2207,6 +2666,50 @@
         // Agenda Filters
         dom.agendaFilterDate.addEventListener('change', renderAgendaView);
         dom.agendaFilterBarber.addEventListener('change', renderAgendaView);
+
+        // Confirmation Modal Action Listeners
+        dom.modalCloseBtn.addEventListener('click', closeConfirmationModal);
+
+        dom.modalBookAnotherBtn.addEventListener('click', () => {
+          closeConfirmationModal();
+          switchView('bookView');
+          dom.clientName.focus();
+        });
+
+        dom.modalViewAgendaBtn.addEventListener('click', () => {
+          closeConfirmationModal();
+          if (state.currentConfirmedAppt) {
+            dom.agendaFilterDate.value = state.currentConfirmedAppt.date;
+          }
+          switchView('agendaView');
+          
+          setTimeout(() => {
+            const newCard = document.querySelector('.appointment-card.newly-added');
+            if (newCard) {
+              newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 150);
+        });
+
+        dom.modalDownloadIcsBtn.addEventListener('click', () => {
+          if (state.currentConfirmedAppt) {
+            downloadCalendarEvent(state.currentConfirmedAppt);
+          }
+        });
+
+        // Close modal on outside click
+        dom.confirmationModal.addEventListener('click', (e) => {
+          if (e.target === dom.confirmationModal) {
+            closeConfirmationModal();
+          }
+        });
+
+        // Close modal on Escape key
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && dom.confirmationModal.classList.contains('active')) {
+            closeConfirmationModal();
+          }
+        });
 
         // Reset demo data
         dom.resetDemoDataBtn.addEventListener('click', () => {

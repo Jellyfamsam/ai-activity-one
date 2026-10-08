@@ -1,0 +1,2255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Master's Chair — Barber & Client Appointment Scheduler</title>
+  <style>
+    /* ==========================================================================
+       CSS Variables & Global Reset
+       ========================================================================== */
+    :root {
+      --bg-main: #111317;
+      --bg-card: #1a1e24;
+      --bg-card-hover: #222730;
+      --bg-input: #14171d;
+      --border-color: #2e3542;
+      --border-focus: #d4af37;
+      
+      --accent-gold: #d4af37;
+      --accent-gold-light: #f3cf65;
+      --accent-gold-dim: rgba(212, 175, 55, 0.15);
+      
+      --text-primary: #f0f3f6;
+      --text-secondary: #9da7b3;
+      --text-muted: #6b7785;
+      
+      --danger: #e65c5c;
+      --danger-dim: rgba(230, 92, 92, 0.15);
+      --success: #3ecf8e;
+      --success-dim: rgba(62, 207, 142, 0.15);
+      --warning: #f5a623;
+      --warning-dim: rgba(245, 166, 35, 0.15);
+      
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.4);
+      --transition: all 0.2s ease-in-out;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ==========================================================================
+       Layout & Navigation
+       ========================================================================== */
+    header {
+      background: linear-gradient(180deg, #181d24 0%, #12151a 100%);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1.25rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .brand-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      font-size: 1.85rem;
+      background: var(--accent-gold-dim);
+      border: 1px solid var(--accent-gold);
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .brand-tagline {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      max-width: 800px;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--success);
+    }
+
+    .badge-dot.closed {
+      background-color: var(--danger);
+    }
+
+    /* Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: var(--bg-main);
+      padding: 0.35rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .nav-tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 0.6rem 0.75rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: var(--transition);
+      text-align: center;
+    }
+
+    .nav-tab-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-tab-btn.active {
+      background: var(--accent-gold);
+      color: #111;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(212, 175, 55, 0.3);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem 1rem;
+    }
+
+    .view-panel {
+      display: none;
+    }
+
+    .view-panel.active {
+      display: block;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       Feedback & Friendly Message Banners
+       ========================================================================== */
+    .message-banner {
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1.5rem;
+      display: none;
+      align-items: flex-start;
+      gap: 0.85rem;
+      font-size: 0.92rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .message-banner.visible {
+      display: flex;
+    }
+
+    .message-banner.error {
+      background: var(--danger-dim);
+      border: 1px solid var(--danger);
+      color: #ff9b9b;
+    }
+
+    .message-banner.warning {
+      background: var(--warning-dim);
+      border: 1px solid var(--warning);
+      color: #ffc97a;
+    }
+
+    .message-banner.success {
+      background: var(--success-dim);
+      border: 1px solid var(--success);
+      color: #72f2b4;
+    }
+
+    .message-banner .icon {
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+
+    .message-banner .content {
+      flex: 1;
+    }
+
+    .message-banner .close-btn {
+      background: transparent;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      font-size: 1.1rem;
+      opacity: 0.7;
+      padding: 0 0.25rem;
+    }
+
+    .message-banner .close-btn:hover {
+      opacity: 1;
+    }
+
+    /* ==========================================================================
+       Booking Grid & Form Styles
+       ========================================================================== */
+    .booking-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 900px) {
+      .booking-grid {
+        grid-template-columns: 1.15fr 0.85fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-header {
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-badge {
+      background: var(--accent-gold);
+      color: #111;
+      font-size: 0.75rem;
+      font-weight: 800;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.4rem;
+    }
+
+    .input-hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    input[type="text"],
+    input[type="tel"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 0.85rem;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: var(--transition);
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    @media (min-width: 580px) {
+      .form-row-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* Service Selector Cards */
+    .service-options {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
+    }
+
+    @media (min-width: 500px) {
+      .service-options {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .service-option-label {
+      cursor: pointer;
+      display: block;
+    }
+
+    .service-option-label input[type="radio"] {
+      display: none;
+    }
+
+    .service-card {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .service-option-label:hover .service-card {
+      border-color: var(--text-muted);
+      background: var(--bg-card-hover);
+    }
+
+    .service-option-label input[type="radio"]:checked + .service-card {
+      border-color: var(--accent-gold);
+      background: var(--accent-gold-dim);
+    }
+
+    .service-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .service-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 0.4rem;
+    }
+
+    .service-price {
+      font-weight: 700;
+      color: var(--accent-gold);
+    }
+
+    /* Client Preferences Box */
+    .pref-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.15rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .pref-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .pref-tag-checkbox {
+      display: none;
+    }
+
+    .pref-tag-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.78rem;
+      padding: 0.45rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+      user-select: none;
+    }
+
+    .pref-tag-checkbox:checked + .pref-tag-btn {
+      background: var(--accent-gold);
+      color: #111;
+      border-color: var(--accent-gold);
+      font-weight: 600;
+    }
+
+    /* Slot Picker Grid */
+    .slots-container {
+      margin-top: 1rem;
+    }
+
+    .slots-section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.65rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+      gap: 0.6rem;
+      max-height: 290px;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
+    .slot-pill {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 0.4rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: var(--transition);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .slot-pill:hover:not(:disabled) {
+      border-color: var(--accent-gold);
+      background: var(--bg-card-hover);
+    }
+
+    .slot-pill.active {
+      background: var(--accent-gold) !important;
+      color: #111 !important;
+      border-color: var(--accent-gold) !important;
+      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+    }
+
+    .slot-pill.recommended {
+      border-color: #d4af37;
+      background: rgba(212, 175, 55, 0.08);
+    }
+
+    .slot-pill.recommended::after {
+      content: "★ Match";
+      font-size: 0.62rem;
+      color: var(--accent-gold);
+      font-weight: 800;
+      display: block;
+      margin-top: 1px;
+    }
+
+    .slot-pill.active.recommended::after {
+      color: #111;
+    }
+
+    .slot-pill:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      border-color: transparent;
+      text-decoration: line-through;
+    }
+
+    .no-slots-notice {
+      padding: 1.5rem 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed var(--border-color);
+      border-radius: var(--radius-md);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Appointment Summary Sidebar Card */
+    .summary-card {
+      position: sticky;
+      top: 5rem;
+    }
+
+    .summary-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.5rem;
+    }
+
+    .summary-label {
+      color: var(--text-muted);
+    }
+
+    .summary-value {
+      font-weight: 600;
+      color: var(--text-primary);
+      text-align: right;
+    }
+
+    .summary-price-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 0.75rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .summary-price-total span:last-child {
+      color: var(--accent-gold);
+      font-size: 1.4rem;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 0.85rem 1.25rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-gold);
+      color: #111;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-gold-light);
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+      color: var(--text-primary);
+      border-color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .btn-danger-outline {
+      background: transparent;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      font-size: 0.8rem;
+      padding: 0.4rem 0.75rem;
+      width: auto;
+    }
+
+    .btn-danger-outline:hover {
+      background: var(--danger-dim);
+    }
+
+    .btn-success-outline {
+      background: transparent;
+      border: 1px solid var(--success);
+      color: var(--success);
+      font-size: 0.8rem;
+      padding: 0.4rem 0.75rem;
+      width: auto;
+    }
+
+    .btn-success-outline:hover {
+      background: var(--success-dim);
+    }
+
+    /* ==========================================================================
+       Schedule / Agenda View
+       ========================================================================== */
+    .agenda-header {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (min-width: 680px) {
+      .agenda-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .agenda-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .agenda-stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--accent-gold);
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .appointment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .appointment-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.15rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    @media (min-width: 760px) {
+      .appointment-card {
+        grid-template-columns: 140px 1fr auto;
+        align-items: center;
+      }
+    }
+
+    .appointment-card:hover {
+      border-color: var(--border-focus);
+    }
+
+    .appointment-card.completed {
+      opacity: 0.55;
+      background: #14161a;
+    }
+
+    .appointment-card.completed .appt-client-name {
+      text-decoration: line-through;
+    }
+
+    .appt-time-badge {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .appt-time {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .appt-duration {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .appt-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .appt-client-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .appt-barber-tag {
+      font-size: 0.78rem;
+      background: var(--accent-gold-dim);
+      color: var(--accent-gold);
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-sm);
+      display: inline-block;
+      font-weight: 600;
+      width: fit-content;
+    }
+
+    .appt-service-info {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+    }
+
+    .appt-tags-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.25rem;
+    }
+
+    .appt-pref-chip {
+      font-size: 0.72rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+    }
+
+    .appt-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* ==========================================================================
+       Shop Hours & Policy Panel
+       ========================================================================== */
+    .hours-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+    }
+
+    .hours-table th,
+    .hours-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.9rem;
+    }
+
+    .hours-table th {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .hours-table tr.today-row {
+      background: var(--accent-gold-dim);
+    }
+
+    .hours-table tr.today-row td {
+      font-weight: 700;
+      color: var(--accent-gold);
+    }
+
+    .closed-badge {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 1.5rem 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: auto;
+    }
+
+    .reset-demo-link {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-left: 0.5rem;
+    }
+
+    .reset-demo-link:hover {
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-container">
+      <div class="brand-row">
+        <div class="brand-title-group">
+          <div class="brand-icon">💈</div>
+          <div>
+            <h1>The Master's Chair Barber Co.</h1>
+            <p class="brand-tagline">Effortlessly book and manage client haircut appointments tailored to client preferences and shop operating hours.</p>
+          </div>
+        </div>
+
+        <div id="liveShopStatusBadge" class="header-badge">
+          <span class="badge-dot" id="liveShopDot"></span>
+          <span id="liveShopStatusText">Checking shop hours...</span>
+        </div>
+      </div>
+
+      <!-- Nav Tabs -->
+      <nav class="nav-tabs">
+        <button type="button" class="nav-tab-btn active" data-view="bookView">
+          ✂️ Book Appointment
+        </button>
+        <button type="button" class="nav-tab-btn" data-view="agendaView">
+          📅 Barber Schedule (<span id="tabApptCount">0</span>)
+        </button>
+        <button type="button" class="nav-tab-btn" data-view="hoursView">
+          🕒 Shop Hours
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main>
+    <!-- Friendly Feedback Message Banner -->
+    <div id="messageBanner" class="message-banner" role="alert">
+      <span class="icon" id="messageBannerIcon">💡</span>
+      <div class="content" id="messageBannerContent">Welcome! Choose your preferences below to get started.</div>
+      <button type="button" class="close-btn" id="messageBannerClose" aria-label="Close message">&times;</button>
+    </div>
+
+    <!-- ====================================================================
+         VIEW 1: BOOKING & PREFERENCE ENGINE
+         ==================================================================== -->
+    <section id="bookView" class="view-panel active">
+      <form id="bookingForm" novalidate>
+        <div class="booking-grid">
+          
+          <!-- Left Column: Client Details, Services & Preferences -->
+          <div class="card">
+            
+            <!-- Step 1: Client Info -->
+            <div class="card-header">
+              <h2 class="card-title">
+                <span class="step-badge">1</span> Client Information
+              </h2>
+            </div>
+            
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="clientName">Full Name *</label>
+                <input type="text" id="clientName" placeholder="e.g. David Miller" required>
+                <div class="input-hint">Who will be sitting in the chair?</div>
+              </div>
+              <div class="form-group">
+                <label for="clientPhone">Phone Number *</label>
+                <input type="tel" id="clientPhone" placeholder="e.g. (555) 234-5678" required>
+                <div class="input-hint">For appointment confirmation text</div>
+              </div>
+            </div>
+
+            <!-- Step 2: Choose Service -->
+            <div class="card-header" style="margin-top: 1rem;">
+              <h2 class="card-title">
+                <span class="step-badge">2</span> Select Service
+              </h2>
+            </div>
+
+            <div class="service-options" id="servicesContainer">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Step 3: Client Preferences -->
+            <div class="card-header" style="margin-top: 1rem;">
+              <h2 class="card-title">
+                <span class="step-badge">3</span> Client Preferences
+              </h2>
+            </div>
+
+            <div class="pref-box">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="preferredBarber">Preferred Barber</label>
+                  <select id="preferredBarber">
+                    <option value="any">First Available Barber (Fastest)</option>
+                    <option value="Marcus Vance">Marcus Vance (Master Barber & Fades)</option>
+                    <option value="Leo Sterling">Leo Sterling (Beard & Hot Shave Specialist)</option>
+                    <option value="Sammi Rivera">Sammi Rivera (Modern Texture & Scissor Cuts)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="preferredWindow">Preferred Time of Day</label>
+                  <select id="preferredWindow">
+                    <option value="any">Any Time of Day</option>
+                    <option value="morning">Morning (9:00 AM – 12:00 PM)</option>
+                    <option value="afternoon">Afternoon (12:00 PM – 4:00 PM)</option>
+                    <option value="evening">Evening (4:00 PM – Close)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.5rem;">
+                <label>Grooming & Atmosphere Preferences</label>
+                <div class="pref-tags">
+                  <label>
+                    <input type="checkbox" name="prefTags" value="Silent Chair / Low Talk" class="pref-tag-checkbox">
+                    <span class="pref-tag-btn">🤫 Quiet Chair (Relax mode)</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" name="prefTags" value="Sensitive Skin / No Alcohol" class="pref-tag-checkbox">
+                    <span class="pref-tag-btn">🌿 Sensitive Skin (Gentle balm)</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" name="prefTags" value="Skin Fade / Razor Sharp Edge" class="pref-tag-checkbox">
+                    <span class="pref-tag-btn">📐 Razor Edge Lineup</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" name="prefTags" value="Beard Oil & Hot Towel Focus" class="pref-tag-checkbox">
+                    <span class="pref-tag-btn">♨️ Extra Hot Towel</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 0.75rem; margin-bottom: 0;">
+                <label for="specialNotes">Special Notes or Style Request (Optional)</label>
+                <input type="text" id="specialNotes" placeholder="e.g. Mid taper fade, keep length on top, high cheek line on beard">
+              </div>
+            </div>
+
+            <!-- Step 4: Pick Date & Time Slot -->
+            <div class="card-header" style="margin-top: 1rem;">
+              <h2 class="card-title">
+                <span class="step-badge">4</span> Date & Available Chair Slot
+              </h2>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="bookingDate">Appointment Date *</label>
+                <input type="date" id="bookingDate" required>
+                <div class="input-hint" id="dateShopHoursHint">Select a day to view open slots</div>
+              </div>
+
+              <div class="form-group">
+                <label>Assigned Barber</label>
+                <input type="text" id="assignedBarberDisplay" value="First Available" readonly style="opacity: 0.8; cursor: not-allowed;">
+                <div class="input-hint">Matched automatically or based on your preference</div>
+              </div>
+            </div>
+
+            <!-- Slots Area -->
+            <div class="slots-container">
+              <div class="slots-section-title">
+                <span>Available Times According to Shop Hours</span>
+                <span id="matchingSlotsCount" style="color: var(--accent-gold); font-size: 0.75rem;"></span>
+              </div>
+              <div id="slotsGrid" class="slots-grid">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Live Booking Summary & Confirmation -->
+          <div>
+            <div class="card summary-card">
+              <div class="card-header">
+                <h3 class="card-title">✂️ Chair Reservation Summary</h3>
+              </div>
+
+              <div class="summary-list">
+                <div class="summary-item">
+                  <span class="summary-label">Service</span>
+                  <span class="summary-value" id="sumService">Classic Haircut</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Duration</span>
+                  <span class="summary-value" id="sumDuration">30 mins</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Barber</span>
+                  <span class="summary-value" id="sumBarber">First Available</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Date</span>
+                  <span class="summary-value" id="sumDate">Select a date</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Time Slot</span>
+                  <span class="summary-value" id="sumTime" style="color: var(--accent-gold);">None Selected</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Preferences</span>
+                  <span class="summary-value" id="sumPreferences" style="font-size: 0.8rem; max-width: 170px;">Standard</span>
+                </div>
+              </div>
+
+              <div class="summary-price-total">
+                <span>Total Due at Shop:</span>
+                <span id="sumPrice">$35</span>
+              </div>
+
+              <button type="submit" id="bookNowBtn" class="btn btn-primary" style="margin-top: 1.5rem;" disabled>
+                🔒 Confirm & Reserve Chair
+              </button>
+              
+              <p class="input-hint" style="text-align: center; margin-top: 0.75rem;">
+                No upfront payment needed. Pay in person after your cut!
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </form>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 2: BARBER SCHEDULE & AGENDA
+         ==================================================================== -->
+    <section id="agendaView" class="view-panel">
+      <div class="agenda-header">
+        <div>
+          <h2>Barber Daily Roster & Agenda</h2>
+          <p style="color: var(--text-secondary); font-size: 0.88rem;">Review upcoming clients, time blocks, and personalized haircut notes.</p>
+        </div>
+
+        <div class="agenda-controls">
+          <div>
+            <label for="agendaFilterDate" style="margin-bottom: 0.2rem; font-size: 0.78rem;">Filter Date</label>
+            <input type="date" id="agendaFilterDate">
+          </div>
+          <div>
+            <label for="agendaFilterBarber" style="margin-bottom: 0.2rem; font-size: 0.78rem;">Filter Barber</label>
+            <select id="agendaFilterBarber">
+              <option value="all">All Barbers</option>
+              <option value="Marcus Vance">Marcus Vance</option>
+              <option value="Leo Sterling">Leo Sterling</option>
+              <option value="Sammi Rivera">Sammi Rivera</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Bar -->
+      <div class="agenda-stats-bar">
+        <div class="stat-card">
+          <div class="stat-number" id="statTotalAppts">0</div>
+          <div class="stat-label">Appointments Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statBookedHours">0h</div>
+          <div class="stat-label">Service Time Booked</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statProjectedRevenue">$0</div>
+          <div class="stat-label">Projected Revenue</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statRemainingSlots">0</div>
+          <div class="stat-label">Remaining Open Slots</div>
+        </div>
+      </div>
+
+      <!-- Appointment List -->
+      <div id="agendaAppointmentsList" class="appointment-list">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 3: SHOP HOURS & POLICIES
+         ==================================================================== -->
+    <section id="hoursView" class="view-panel">
+      <div class="card" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-header">
+          <h2 class="card-title">🕒 Shop Operating Hours & Booking Guidelines</h2>
+        </div>
+
+        <p style="color: var(--text-secondary); margin-bottom: 1.25rem; font-size: 0.95rem;">
+          Our schedule respects both our barbers' craft and our clients' precious time. Client slots are calculated dynamically based on specific service duration and buffer intervals.
+        </p>
+
+        <table class="hours-table">
+          <thead>
+            <tr>
+              <th>Day of Week</th>
+              <th>Opening Hours</th>
+              <th>Barbers On Duty</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="hoursTableBody">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+
+        <div style="margin-top: 2rem; background: var(--bg-input); padding: 1.25rem; border-radius: var(--radius-md); border-left: 4px solid var(--accent-gold);">
+          <h4 style="color: var(--accent-gold); margin-bottom: 0.5rem; font-size: 0.95rem;">💡 How Preference Matching Works</h4>
+          <ul style="color: var(--text-secondary); font-size: 0.88rem; list-style-position: inside; line-height: 1.6;">
+            <li><strong>Preferred Time Windows</strong> (Morning, Afternoon, Evening) highlight matching slots with a gold <span style="color: var(--accent-gold); font-weight: 700;">★ Match</span> badge.</li>
+            <li><strong>Preferred Barber selection</strong> automatically locks the chair to that stylist's specific open blocks. Choosing <em>"First Available"</em> searches all active chairs for maximum flexibility.</li>
+            <li><strong>Atmosphere tags</strong> (Silent chair, sensitive skin) are printed directly on the barber's roster so your chair is prepped prior to your arrival.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div style="max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem;">
+      <div>
+        &copy; The Master's Chair Barber Co. • All client bookings stored locally in browser.
+      </div>
+      <div>
+        <button type="button" class="reset-demo-link" id="resetDemoDataBtn">Reset Demo Appointments</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       JAVASCRIPT LOGIC
+       ========================================================================== -->
+  <script>
+    (function() {
+      'use strict';
+
+      /* ------------------------------------------------------------------------
+         1. CONSTANTS & SHOP CONFIGURATION
+         ------------------------------------------------------------------------ */
+      const BARBERS = [
+        { id: "Marcus Vance", name: "Marcus Vance", title: "Master Barber & Fades", experience: "12 yrs" },
+        { id: "Leo Sterling", name: "Leo Sterling", title: "Beard & Hot Shave Specialist", experience: "9 yrs" },
+        { id: "Sammi Rivera", name: "Sammi Rivera", title: "Modern Texture & Scissor Cuts", experience: "7 yrs" }
+      ];
+
+      const SERVICES = [
+        { id: "haircut", name: "Classic Haircut", duration: 30, price: 35, desc: "Precision consultation, cut, warm neck lather & style" },
+        { id: "beard", name: "Beard Sculpt & Shape", duration: 25, price: 25, desc: "Detailed edge trimmer, hot oil massage & foil finish" },
+        { id: "combo", name: "Signature Haircut & Beard", duration: 50, price: 55, desc: "Full tailored cut, detailed beard trim & hot towel" },
+        { id: "hot-shave", name: "Hot Lather Straight Razor", duration: 40, price: 40, desc: "Pre-shave essential oils, 2 hot towels & straight razor" },
+        { id: "buzz", name: "Buzz Cut & Lineup", duration: 20, price: 22, desc: "Uniform clipper cut, razor crisp hairline & neck clean" },
+        { id: "senior-jr", name: "Junior / Senior Haircut", duration: 30, price: 28, desc: "Gentle styling for youth (under 12) or seniors (65+)" }
+      ];
+
+      // Operating hours: 0 = Sunday, 1 = Monday, 2 = Tuesday, etc.
+      const SHOP_SCHEDULE = {
+        0: { open: "10:00", close: "15:00", isOpen: true, dayName: "Sunday" },
+        1: { open: null, close: null, isOpen: false, dayName: "Monday" }, // Closed Mondays
+        2: { open: "09:00", close: "18:00", isOpen: true, dayName: "Tuesday" },
+        3: { open: "09:00", close: "18:00", isOpen: true, dayName: "Wednesday" },
+        4: { open: "09:00", close: "18:00", isOpen: true, dayName: "Thursday" },
+        5: { open: "09:00", close: "18:00", isOpen: true, dayName: "Friday" },
+        6: { open: "09:00", close: "17:00", isOpen: true, dayName: "Saturday" }
+      };
+
+      const STORAGE_KEY = 'barber_scheduler_appointments_v1';
+
+      /* ------------------------------------------------------------------------
+         2. STATE MANAGEMENT
+         ------------------------------------------------------------------------ */
+      let state = {
+        activeView: 'bookView',
+        selectedServiceId: SERVICES[0].id,
+        selectedDate: getTodayDateString(),
+        selectedTimeSlot: null,
+        selectedBarberForSlot: null,
+        appointments: []
+      };
+
+      /* ------------------------------------------------------------------------
+         3. DOM ELEMENT REFERENCES
+         ------------------------------------------------------------------------ */
+      const dom = {
+        navTabBtns: document.querySelectorAll('.nav-tab-btn'),
+        viewPanels: document.querySelectorAll('.view-panel'),
+        
+        // Message Banner
+        messageBanner: document.getElementById('messageBanner'),
+        messageBannerIcon: document.getElementById('messageBannerIcon'),
+        messageBannerContent: document.getElementById('messageBannerContent'),
+        messageBannerClose: document.getElementById('messageBannerClose'),
+        
+        // Header
+        liveShopStatusText: document.getElementById('liveShopStatusText'),
+        liveShopDot: document.getElementById('liveShopDot'),
+        tabApptCount: document.getElementById('tabApptCount'),
+        
+        // Booking Form
+        bookingForm: document.getElementById('bookingForm'),
+        clientName: document.getElementById('clientName'),
+        clientPhone: document.getElementById('clientPhone'),
+        servicesContainer: document.getElementById('servicesContainer'),
+        preferredBarber: document.getElementById('preferredBarber'),
+        preferredWindow: document.getElementById('preferredWindow'),
+        specialNotes: document.getElementById('specialNotes'),
+        prefTagCheckboxes: document.querySelectorAll('input[name="prefTags"]'),
+        bookingDate: document.getElementById('bookingDate'),
+        dateShopHoursHint: document.getElementById('dateShopHoursHint'),
+        assignedBarberDisplay: document.getElementById('assignedBarberDisplay'),
+        slotsGrid: document.getElementById('slotsGrid'),
+        matchingSlotsCount: document.getElementById('matchingSlotsCount'),
+        bookNowBtn: document.getElementById('bookNowBtn'),
+        
+        // Summary
+        sumService: document.getElementById('sumService'),
+        sumDuration: document.getElementById('sumDuration'),
+        sumBarber: document.getElementById('sumBarber'),
+        sumDate: document.getElementById('sumDate'),
+        sumTime: document.getElementById('sumTime'),
+        sumPreferences: document.getElementById('sumPreferences'),
+        sumPrice: document.getElementById('sumPrice'),
+        
+        // Agenda View
+        agendaFilterDate: document.getElementById('agendaFilterDate'),
+        agendaFilterBarber: document.getElementById('agendaFilterBarber'),
+        agendaAppointmentsList: document.getElementById('agendaAppointmentsList'),
+        statTotalAppts: document.getElementById('statTotalAppts'),
+        statBookedHours: document.getElementById('statBookedHours'),
+        statProjectedRevenue: document.getElementById('statProjectedRevenue'),
+        statRemainingSlots: document.getElementById('statRemainingSlots'),
+        
+        // Shop Hours Table
+        hoursTableBody: document.getElementById('hoursTableBody'),
+        
+        // Reset Demo
+        resetDemoDataBtn: document.getElementById('resetDemoDataBtn')
+      };
+
+      /* ------------------------------------------------------------------------
+         4. HELPER UTILITIES
+         ------------------------------------------------------------------------ */
+      function getTodayDateString() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      function formatTimeDisplay(timeStr24) {
+        if (!timeStr24) return '';
+        const [hours, minutes] = timeStr24.split(':').map(Number);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const hours12 = hours % 12 || 12;
+        return `${hours12}:${String(minutes).padStart(2, '0')} ${ampm}`;
+      }
+
+      function formatDateDisplay(dateStr) {
+        if (!dateStr) return '';
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const dateObj = new Date(year, month - 1, day);
+        return dateObj.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      }
+
+      function timeToMinutes(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+      }
+
+      function minutesToTime(totalMinutes) {
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+      }
+
+      function showBanner(type, message, iconOverride = null) {
+        dom.messageBanner.className = `message-banner visible ${type}`;
+        dom.messageBannerContent.innerHTML = message;
+        
+        if (iconOverride) {
+          dom.messageBannerIcon.textContent = iconOverride;
+        } else if (type === 'error') {
+          dom.messageBannerIcon.textContent = '⚠️';
+        } else if (type === 'warning') {
+          dom.messageBannerIcon.textContent = '⏳';
+        } else if (type === 'success') {
+          dom.messageBannerIcon.textContent = '✨';
+        } else {
+          dom.messageBannerIcon.textContent = '💡';
+        }
+      }
+
+      function hideBanner() {
+        dom.messageBanner.className = 'message-banner';
+      }
+
+      /* ------------------------------------------------------------------------
+         5. PERSISTENCE & SAMPLE DATA
+         ------------------------------------------------------------------------ */
+      function loadAppointments() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            state.appointments = JSON.parse(raw);
+          } else {
+            seedSampleAppointments();
+          }
+        } catch (e) {
+          console.error("Storage load error:", e);
+          seedSampleAppointments();
+        }
+      }
+
+      function saveAppointments() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state.appointments));
+          updateBadgeCounters();
+        } catch (e) {
+          console.error("Storage save error:", e);
+        }
+      }
+
+      function seedSampleAppointments() {
+        const todayStr = getTodayDateString();
+        
+        // Find next open day if today is Monday
+        const todayDay = new Date().getDay();
+        const targetDate = todayDay === 1 ? getTomorrowDateString() : todayStr;
+
+        state.appointments = [
+          {
+            id: 'appt_' + Date.now() + '_1',
+            clientName: "Julian Ross",
+            clientPhone: "(555) 349-8812",
+            serviceId: "combo",
+            serviceName: "Signature Haircut & Beard",
+            duration: 50,
+            price: 55,
+            barberName: "Marcus Vance",
+            date: targetDate,
+            time: "10:00",
+            preferences: ["Skin Fade / Razor Sharp Edge", "Beard Oil & Hot Towel Focus"],
+            specialNotes: "High skin fade, tidy up mustache corners",
+            status: "confirmed"
+          },
+          {
+            id: 'appt_' + Date.now() + '_2',
+            clientName: "Christopher Hall",
+            clientPhone: "(555) 782-4411",
+            serviceId: "haircut",
+            duration: 30,
+            price: 35,
+            serviceName: "Classic Haircut",
+            barberName: "Leo Sterling",
+            date: targetDate,
+            time: "11:30",
+            preferences: ["Silent Chair / Low Talk"],
+            specialNotes: "Relaxed cut, natural side part",
+            status: "confirmed"
+          },
+          {
+            id: 'appt_' + Date.now() + '_3',
+            clientName: "Mateo Gomez",
+            clientPhone: "(555) 412-9900",
+            serviceId: "hot-shave",
+            duration: 40,
+            price: 40,
+            serviceName: "Hot Lather Straight Razor",
+            barberName: "Sammi Rivera",
+            date: targetDate,
+            time: "14:00",
+            preferences: ["Sensitive Skin / No Alcohol"],
+            specialNotes: "Use cold towel afterward, allergic to strong fragrance",
+            status: "confirmed"
+          }
+        ];
+        saveAppointments();
+      }
+
+      function getTomorrowDateString() {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const year = tomorrow.getFullYear();
+        const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        const day = String(tomorrow.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      /* ------------------------------------------------------------------------
+         6. CORE SCHEDULING ENGINE
+         ------------------------------------------------------------------------ */
+      function getShopHoursForDate(dateStr) {
+        if (!dateStr) return null;
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const dayOfWeek = new Date(year, month - 1, day).getDay();
+        return SHOP_SCHEDULE[dayOfWeek];
+      }
+
+      function isShopOpenOnDate(dateStr) {
+        const schedule = getShopHoursForDate(dateStr);
+        return schedule ? schedule.isOpen : false;
+      }
+
+      function isDateInPast(dateStr) {
+        const todayStr = getTodayDateString();
+        return dateStr < todayStr;
+      }
+
+      /**
+       * Determines all valid, non-overlapping available slots for a given date,
+       * service duration, and preferred barber.
+       */
+      function calculateAvailableSlots(dateStr, serviceDuration, preferredBarberId, preferredWindow) {
+        const shopDay = getShopHoursForDate(dateStr);
+        if (!shopDay || !shopDay.isOpen) {
+          return { status: 'closed', slots: [], reason: 'Shop is closed on this day.' };
+        }
+
+        if (isDateInPast(dateStr)) {
+          return { status: 'past_date', slots: [], reason: 'Date is in the past.' };
+        }
+
+        const openMin = timeToMinutes(shopDay.open);
+        const closeMin = timeToMinutes(shopDay.close);
+        const stepInterval = 30; // standard slot increment in minutes
+
+        // Filter appointments already booked on this date
+        const existingApptsOnDate = state.appointments.filter(a => a.date === dateStr && a.status !== 'cancelled');
+
+        const activeBarbers = preferredBarberId === 'any' 
+          ? BARBERS 
+          : BARBERS.filter(b => b.name === preferredBarberId);
+
+        const availableSlots = [];
+
+        for (let currentStart = openMin; currentStart + serviceDuration <= closeMin; currentStart += stepInterval) {
+          const currentEnd = currentStart + serviceDuration;
+          const time24 = minutesToTime(currentStart);
+
+          // Find which barbers are free during this exact interval
+          const freeBarbers = activeBarbers.filter(barber => {
+            const hasConflict = existingApptsOnDate.some(appt => {
+              if (appt.barberName !== barber.name) return false;
+              const apptStart = timeToMinutes(appt.time);
+              const apptEnd = apptStart + appt.duration;
+              // Check overlap: start < apptEnd && currentEnd > apptStart
+              return (currentStart < apptEnd && currentEnd > apptStart);
+            });
+            return !hasConflict;
+          });
+
+          if (freeBarbers.length > 0) {
+            // Check preference match for window
+            const matchesWindow = checkWindowPreference(currentStart, preferredWindow);
+
+            availableSlots.push({
+              time: time24,
+              displayTime: formatTimeDisplay(time24),
+              minutes: currentStart,
+              availableBarbers: freeBarbers,
+              isRecommended: matchesWindow
+            });
+          }
+        }
+
+        return {
+          status: 'open',
+          slots: availableSlots,
+          shopHours: `${formatTimeDisplay(shopDay.open)} – ${formatTimeDisplay(shopDay.close)}`
+        };
+      }
+
+      function checkWindowPreference(startMinute, preferredWindow) {
+        if (!preferredWindow || preferredWindow === 'any') return true;
+        
+        // Morning: 9:00 AM (540 min) to 12:00 PM (720 min)
+        if (preferredWindow === 'morning' && startMinute >= 540 && startMinute < 720) {
+          return true;
+        }
+        // Afternoon: 12:00 PM (720 min) to 4:00 PM (960 min)
+        if (preferredWindow === 'afternoon' && startMinute >= 720 && startMinute < 960) {
+          return true;
+        }
+        // Evening: 4:00 PM (960 min) and later
+        if (preferredWindow === 'evening' && startMinute >= 960) {
+          return true;
+        }
+        return false;
+      }
+
+      /* ------------------------------------------------------------------------
+         7. UI RENDERING
+         ------------------------------------------------------------------------ */
+      function renderServices() {
+        dom.servicesContainer.innerHTML = SERVICES.map(srv => {
+          const isChecked = srv.id === state.selectedServiceId ? 'checked' : '';
+          return `
+            <label class="service-option-label" data-id="${srv.id}">
+              <input type="radio" name="serviceOption" value="${srv.id}" ${isChecked}>
+              <div class="service-card">
+                <div>
+                  <div class="service-name">${srv.name}</div>
+                  <div style="font-size: 0.76rem; color: var(--text-muted);">${srv.desc}</div>
+                </div>
+                <div class="service-meta">
+                  <span>⏱ ${srv.duration} mins</span>
+                  <span class="service-price">$${srv.price}</span>
+                </div>
+              </div>
+            </label>
+          `;
+        }).join('');
+
+        // Attach change events
+        dom.servicesContainer.querySelectorAll('input[name="serviceOption"]').forEach(radio => {
+          radio.addEventListener('change', (e) => {
+            state.selectedServiceId = e.target.value;
+            state.selectedTimeSlot = null; // reset slot selection when service duration changes
+            updateSlotsUI();
+            updateSummaryUI();
+          });
+        });
+      }
+
+      function updateSlotsUI() {
+        const currentService = SERVICES.find(s => s.id === state.selectedServiceId);
+        const selectedDate = dom.bookingDate.value;
+        const preferredBarberVal = dom.preferredBarber.value;
+        const preferredWindowVal = dom.preferredWindow.value;
+
+        if (!selectedDate) {
+          dom.slotsGrid.innerHTML = `
+            <div class="no-slots-notice" style="grid-column: 1 / -1;">
+              📅 Please choose a date above to display available barber slots.
+            </div>
+          `;
+          dom.matchingSlotsCount.textContent = '';
+          dom.dateShopHoursHint.textContent = 'Select a day to view open slots';
+          return;
+        }
+
+        const shopDay = getShopHoursForDate(selectedDate);
+
+        // Friendly Validation: Closed Days (Mondays)
+        if (!shopDay || !shopDay.isOpen) {
+          dom.dateShopHoursHint.innerHTML = `<span style="color: var(--danger); font-weight: 600;">Shop Closed on Mondays</span>`;
+          dom.slotsGrid.innerHTML = `
+            <div class="no-slots-notice" style="grid-column: 1 / -1; border-color: var(--danger);">
+              <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">💈</div>
+              <strong style="color: var(--danger);">We are closed on Mondays!</strong><br>
+              Our team takes Mondays to sharpen our shears and rest. Please select Tuesday through Sunday for your appointment.
+            </div>
+          `;
+          dom.matchingSlotsCount.textContent = '0 slots';
+          showBanner('warning', `<strong>Friendly Reminder:</strong> The shop is closed on Mondays so our team can rest and maintain our tools. Please choose Tuesday through Sunday!`, '💈');
+          state.selectedTimeSlot = null;
+          updateSummaryUI();
+          return;
+        }
+
+        // Friendly Validation: Past Dates
+        if (isDateInPast(selectedDate)) {
+          dom.dateShopHoursHint.innerHTML = `<span style="color: var(--danger); font-weight: 600;">Past Date Selected</span>`;
+          dom.slotsGrid.innerHTML = `
+            <div class="no-slots-notice" style="grid-column: 1 / -1; border-color: var(--danger);">
+              <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⏳</div>
+              <strong style="color: var(--danger);">Date has already passed</strong><br>
+              Time travel isn't on our service menu just yet! Please select today or an upcoming date.
+            </div>
+          `;
+          dom.matchingSlotsCount.textContent = '0 slots';
+          showBanner('error', `<strong>Oops:</strong> Appointments can't be booked for days in the past. Please select an upcoming date!`, '⏳');
+          state.selectedTimeSlot = null;
+          updateSummaryUI();
+          return;
+        }
+
+        // Shop is open on this date!
+        const openDisplay = formatTimeDisplay(shopDay.open);
+        const closeDisplay = formatTimeDisplay(shopDay.close);
+        dom.dateShopHoursHint.innerHTML = `<span style="color: var(--success); font-weight: 600;">Open ${shopDay.dayName}: ${openDisplay} – ${closeDisplay}</span>`;
+
+        const calculation = calculateAvailableSlots(selectedDate, currentService.duration, preferredBarberVal, preferredWindowVal);
+        const slots = calculation.slots;
+
+        if (slots.length === 0) {
+          dom.slotsGrid.innerHTML = `
+            <div class="no-slots-notice" style="grid-column: 1 / -1;">
+              <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">✂️</div>
+              <strong>All chairs are filled for this date & service duration!</strong><br>
+              Try choosing another barber, or check an adjacent date to secure your spot.
+            </div>
+          `;
+          dom.matchingSlotsCount.textContent = '0 open slots';
+          showBanner('warning', `<strong>Fully Booked:</strong> All appointments for ${preferredBarberVal === 'any' ? 'all barbers' : preferredBarberVal} are taken for this day. Please try another day or barber.`, '✂️');
+          state.selectedTimeSlot = null;
+          updateSummaryUI();
+          return;
+        }
+
+        // Hide banner if previous error resolved
+        hideBanner();
+
+        // Render slots
+        let recommendedCount = 0;
+        dom.slotsGrid.innerHTML = slots.map(slot => {
+          const isSelected = state.selectedTimeSlot === slot.time;
+          const recClass = slot.isRecommended ? 'recommended' : '';
+          const activeClass = isSelected ? 'active' : '';
+          if (slot.isRecommended) recommendedCount++;
+
+          return `
+            <button type="button" 
+                    class="slot-pill ${recClass} ${activeClass}" 
+                    data-time="${slot.time}" 
+                    data-barbers="${slot.availableBarbers.map(b => b.name).join(',')}">
+              <span>${slot.displayTime}</span>
+            </button>
+          `;
+        }).join('');
+
+        if (preferredWindowVal !== 'any') {
+          dom.matchingSlotsCount.textContent = `${recommendedCount} match your ${preferredWindowVal} preference (${slots.length} total open)`;
+        } else {
+          dom.matchingSlotsCount.textContent = `${slots.length} slots available`;
+        }
+
+        // Re-attach slot click listeners
+        dom.slotsGrid.querySelectorAll('.slot-pill').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const timeVal = btn.getAttribute('data-time');
+            const barbersList = btn.getAttribute('data-barbers').split(',');
+
+            dom.slotsGrid.querySelectorAll('.slot-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            state.selectedTimeSlot = timeVal;
+
+            // Assign barber based on availability and preference
+            if (preferredBarberVal !== 'any' && barbersList.includes(preferredBarberVal)) {
+              state.selectedBarberForSlot = preferredBarberVal;
+            } else {
+              // Assign first free barber
+              state.selectedBarberForSlot = barbersList[0];
+            }
+
+            dom.assignedBarberDisplay.value = state.selectedBarberForSlot;
+            updateSummaryUI();
+          });
+        });
+      }
+
+      function updateSummaryUI() {
+        const srv = SERVICES.find(s => s.id === state.selectedServiceId) || SERVICES[0];
+        dom.sumService.textContent = srv.name;
+        dom.sumDuration.textContent = `${srv.duration} mins`;
+        dom.sumPrice.textContent = `$${srv.price}`;
+
+        const selectedDate = dom.bookingDate.value;
+        dom.sumDate.textContent = selectedDate ? formatDateDisplay(selectedDate) : 'Select a date';
+
+        if (state.selectedTimeSlot) {
+          dom.sumTime.textContent = formatTimeDisplay(state.selectedTimeSlot);
+          dom.sumBarber.textContent = state.selectedBarberForSlot || 'Assigned automatically';
+        } else {
+          dom.sumTime.textContent = 'None Selected';
+          dom.sumBarber.textContent = dom.preferredBarber.value === 'any' ? 'First Available' : dom.preferredBarber.value;
+        }
+
+        // Preferences tags string
+        const selectedTags = Array.from(document.querySelectorAll('input[name="prefTags"]:checked')).map(cb => cb.value);
+        if (selectedTags.length > 0) {
+          dom.sumPreferences.textContent = selectedTags.length <= 2 
+            ? selectedTags.join(', ') 
+            : `${selectedTags[0]} + ${selectedTags.length - 1} more`;
+        } else {
+          dom.sumPreferences.textContent = 'Standard Service';
+        }
+
+        // Enable or disable booking button
+        const isReady = Boolean(
+          dom.clientName.value.trim() &&
+          dom.clientPhone.value.trim() &&
+          selectedDate &&
+          isShopOpenOnDate(selectedDate) &&
+          !isDateInPast(selectedDate) &&
+          state.selectedTimeSlot
+        );
+
+        dom.bookNowBtn.disabled = !isReady;
+      }
+
+      /* ------------------------------------------------------------------------
+         8. AGENDA VIEW LOGIC
+         ------------------------------------------------------------------------ */
+      function renderAgendaView() {
+        const filterDate = dom.agendaFilterDate.value;
+        const filterBarber = dom.agendaFilterBarber.value;
+
+        // Filter appointments
+        let list = state.appointments.filter(appt => appt.status !== 'cancelled');
+
+        if (filterDate) {
+          list = list.filter(appt => appt.date === filterDate);
+        }
+
+        if (filterBarber !== 'all') {
+          list = list.filter(appt => appt.barberName === filterBarber);
+        }
+
+        // Sort by time
+        list.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+        // Update statistics for this filtered day
+        const totalCount = list.length;
+        const totalDurationMins = list.reduce((sum, a) => sum + (a.duration || 30), 0);
+        const totalRevenue = list.reduce((sum, a) => sum + (a.price || 0), 0);
+        
+        dom.statTotalAppts.textContent = totalCount;
+        dom.statBookedHours.textContent = `${(totalDurationMins / 60).toFixed(1)}h`;
+        dom.statProjectedRevenue.textContent = `$${totalRevenue}`;
+
+        // Remaining open slots estimation for date
+        if (filterDate && isShopOpenOnDate(filterDate)) {
+          const sampleSlots = calculateAvailableSlots(filterDate, 30, filterBarber, 'any');
+          dom.statRemainingSlots.textContent = sampleSlots.slots.length;
+        } else {
+          dom.statRemainingSlots.textContent = filterDate ? 'Closed' : '--';
+        }
+
+        // Render Cards
+        if (list.length === 0) {
+          dom.agendaAppointmentsList.innerHTML = `
+            <div class="no-slots-notice" style="padding: 2.5rem 1rem;">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;">📅</div>
+              <h3 style="color: var(--text-primary); margin-bottom: 0.35rem;">No Appointments Scheduled</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">
+                There are no client bookings matching the selected date and barber filters.
+              </p>
+            </div>
+          `;
+          return;
+        }
+
+        dom.agendaAppointmentsList.innerHTML = list.map(appt => {
+          const isCompleted = appt.status === 'completed';
+          const prefChipsHtml = (appt.preferences || []).map(p => `<span class="appt-pref-chip">${p}</span>`).join('');
+          const notesHtml = appt.specialNotes ? `<div style="font-size: 0.8rem; color: #ffc97a; margin-top: 0.2rem;">📝 "${appt.specialNotes}"</div>` : '';
+
+          return `
+            <div class="appointment-card ${isCompleted ? 'completed' : ''}" data-id="${appt.id}">
+              <div class="appt-time-badge">
+                <div class="appt-time">${formatTimeDisplay(appt.time)}</div>
+                <div class="appt-duration">${appt.duration} min service</div>
+              </div>
+
+              <div class="appt-details">
+                <div class="appt-client-name">
+                  <span>${appt.clientName}</span>
+                  ${isCompleted ? '<span style="font-size: 0.72rem; color: var(--success); font-weight: 700;">✓ DONE</span>' : ''}
+                </div>
+                <div>
+                  <span class="appt-barber-tag">💈 ${appt.barberName}</span>
+                  <span class="appt-service-info" style="margin-left: 0.5rem;">${appt.serviceName} • $${appt.price}</span>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                  📞 ${appt.clientPhone} • ${formatDateDisplay(appt.date)}
+                </div>
+                ${notesHtml}
+                <div class="appt-tags-list">
+                  ${prefChipsHtml}
+                </div>
+              </div>
+
+              <div class="appt-actions">
+                ${!isCompleted ? `
+                  <button type="button" class="btn btn-success-outline complete-appt-btn" data-id="${appt.id}" title="Mark completed">
+                    ✓ Done
+                  </button>
+                ` : `
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">Completed</span>
+                `}
+                <button type="button" class="btn btn-danger-outline cancel-appt-btn" data-id="${appt.id}" title="Cancel booking">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Action listeners
+        dom.agendaAppointmentsList.querySelectorAll('.complete-appt-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = btn.getAttribute('data-id');
+            completeAppointment(id);
+          });
+        });
+
+        dom.agendaAppointmentsList.querySelectorAll('.cancel-appt-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = btn.getAttribute('data-id');
+            cancelAppointment(id);
+          });
+        });
+      }
+
+      function completeAppointment(id) {
+        const item = state.appointments.find(a => a.id === id);
+        if (item) {
+          item.status = 'completed';
+          saveAppointments();
+          renderAgendaView();
+          showBanner('success', `<strong>Chair Finished:</strong> Marked appointment for <strong>${item.clientName}</strong> as completed!`, '💈');
+        }
+      }
+
+      function cancelAppointment(id) {
+        const item = state.appointments.find(a => a.id === id);
+        if (!item) return;
+
+        const confirmCancel = confirm(`Are you sure you want to cancel the appointment for ${item.clientName} at ${formatTimeDisplay(item.time)}?`);
+        if (confirmCancel) {
+          item.status = 'cancelled';
+          saveAppointments();
+          renderAgendaView();
+          updateSlotsUI();
+          showBanner('info', `Appointment for <strong>${item.clientName}</strong> on ${formatDateDisplay(item.date)} has been cancelled. Slot opened up.`, '✂️');
+        }
+      }
+
+      /* ------------------------------------------------------------------------
+         9. SHOP HOURS TABLE & LIVE STATUS
+         ------------------------------------------------------------------------ */
+      function renderHoursTable() {
+        const todayDayIndex = new Date().getDay();
+        const days = [1, 2, 3, 4, 5, 6, 0]; // Monday through Sunday order
+
+        dom.hoursTableBody.innerHTML = days.map(dIndex => {
+          const item = SHOP_SCHEDULE[dIndex];
+          const isToday = dIndex === todayDayIndex;
+          const statusText = item.isOpen 
+            ? `<span style="color: var(--success); font-weight: 600;">Open</span>` 
+            : `<span class="closed-badge">Closed</span>`;
+
+          const hoursText = item.isOpen 
+            ? `${formatTimeDisplay(item.open)} – ${formatTimeDisplay(item.close)}` 
+            : `<span style="color: var(--text-muted);">Rest & Sharpening</span>`;
+
+          const barbersOnDuty = item.isOpen ? 'Marcus, Leo, Sammi' : 'None (Shop Closed)';
+
+          return `
+            <tr class="${isToday ? 'today-row' : ''}">
+              <td>${item.dayName} ${isToday ? '<span style="font-size: 0.75rem; background: var(--accent-gold); color: #111; padding: 2px 6px; border-radius: 4px; margin-left: 4px;">TODAY</span>' : ''}</td>
+              <td>${hoursText}</td>
+              <td>${barbersOnDuty}</td>
+              <td>${statusText}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function updateLiveShopStatus() {
+        const now = new Date();
+        const dayOfWeek = now.getDay();
+        const schedule = SHOP_SCHEDULE[dayOfWeek];
+
+        if (!schedule.isOpen) {
+          dom.liveShopDot.className = 'badge-dot closed';
+          dom.liveShopStatusText.textContent = `Shop Closed Today (${schedule.dayName})`;
+          return;
+        }
+
+        const nowMinutes = now.getHours() * 60 + now.getMinutes();
+        const openMin = timeToMinutes(schedule.open);
+        const closeMin = timeToMinutes(schedule.close);
+
+        if (nowMinutes >= openMin && nowMinutes < closeMin) {
+          dom.liveShopDot.className = 'badge-dot';
+          dom.liveShopStatusText.textContent = `Open Now • Closes at ${formatTimeDisplay(schedule.close)}`;
+        } else if (nowMinutes < openMin) {
+          dom.liveShopDot.className = 'badge-dot closed';
+          dom.liveShopStatusText.textContent = `Opens Today at ${formatTimeDisplay(schedule.open)}`;
+        } else {
+          dom.liveShopDot.className = 'badge-dot closed';
+          dom.liveShopStatusText.textContent = `Closed for Today • Opens Tomorrow`;
+        }
+      }
+
+      function updateBadgeCounters() {
+        const activeCount = state.appointments.filter(a => a.status === 'confirmed').length;
+        dom.tabApptCount.textContent = activeCount;
+      }
+
+      /* ------------------------------------------------------------------------
+         10. FORM SUBMISSION & CLIENT SCHEDULING
+         ------------------------------------------------------------------------ */
+      function handleBookingSubmit(e) {
+        e.preventDefault();
+
+        const name = dom.clientName.value.trim();
+        const phone = dom.clientPhone.value.trim();
+        const date = dom.bookingDate.value;
+        const timeSlot = state.selectedTimeSlot;
+
+        // Friendly Validation: Name
+        if (!name) {
+          showBanner('error', '<strong>Missing Information:</strong> Please provide the client\'s name for the appointment.', '📋');
+          dom.clientName.focus();
+          return;
+        }
+
+        // Friendly Validation: Phone
+        if (!phone || phone.length < 7) {
+          showBanner('error', '<strong>Contact Check:</strong> Please enter a valid phone number so we can confirm the booking.', '📞');
+          dom.clientPhone.focus();
+          return;
+        }
+
+        // Friendly Validation: Date
+        if (!date) {
+          showBanner('error', '<strong>Date Required:</strong> Please choose an appointment date.', '📅');
+          dom.bookingDate.focus();
+          return;
+        }
+
+        if (!isShopOpenOnDate(date)) {
+          showBanner('warning', '<strong>Shop Closed:</strong> We cannot accept bookings on Mondays. Please select another day.', '💈');
+          return;
+        }
+
+        if (isDateInPast(date)) {
+          showBanner('error', '<strong>Past Date:</strong> Appointments cannot be scheduled in the past. Please choose today or an upcoming day.', '⏳');
+          return;
+        }
+
+        // Friendly Validation: Slot
+        if (!timeSlot) {
+          showBanner('warning', '<strong>Select a Time:</strong> Please tap one of the available open chair time slots above before confirming.', '✂️');
+          return;
+        }
+
+        const selectedService = SERVICES.find(s => s.id === state.selectedServiceId);
+        const assignedBarber = state.selectedBarberForSlot || (dom.preferredBarber.value !== 'any' ? dom.preferredBarber.value : BARBERS[0].name);
+
+        // Conflict check safeguard
+        const hasDoubleBooking = state.appointments.some(a => {
+          if (a.date !== date || a.barberName !== assignedBarber || a.status === 'cancelled') return false;
+          const startA = timeToMinutes(a.time);
+          const endA = startA + a.duration;
+          const startNew = timeToMinutes(timeSlot);
+          const endNew = startNew + selectedService.duration;
+          return (startNew < endA && endNew > startA);
+        });
+
+        if (hasDoubleBooking) {
+          showBanner('error', `<strong>Chair Conflict:</strong> That slot was just claimed for ${assignedBarber}. Please tap another open slot from the list.`, '⚠️');
+          updateSlotsUI();
+          return;
+        }
+
+        // Selected preference tags
+        const checkedTags = Array.from(document.querySelectorAll('input[name="prefTags"]:checked')).map(cb => cb.value);
+        const notes = dom.specialNotes.value.trim();
+
+        // Create new appointment object
+        const newAppt = {
+          id: 'appt_' + Date.now(),
+          clientName: name,
+          clientPhone: phone,
+          serviceId: selectedService.id,
+          serviceName: selectedService.name,
+          duration: selectedService.duration,
+          price: selectedService.price,
+          barberName: assignedBarber,
+          date: date,
+          time: timeSlot,
+          preferences: checkedTags,
+          specialNotes: notes,
+          status: 'confirmed'
+        };
+
+        state.appointments.push(newAppt);
+        saveAppointments();
+
+        // Success Feedback
+        showBanner('success', `
+          🎉 <strong>Chair Confirmed for ${name}!</strong><br>
+          ${selectedService.name} with <strong>${assignedBarber}</strong> on <strong>${formatDateDisplay(date)}</strong> at <strong>${formatTimeDisplay(timeSlot)}</strong>.
+          We have saved your preferences!
+        `, '💈');
+
+        // Reset form selections
+        dom.clientName.value = '';
+        dom.clientPhone.value = '';
+        dom.specialNotes.value = '';
+        document.querySelectorAll('input[name="prefTags"]').forEach(cb => cb.checked = false);
+        state.selectedTimeSlot = null;
+
+        // Switch filter in Agenda view to this date for convenience
+        dom.agendaFilterDate.value = date;
+
+        updateSlotsUI();
+        updateSummaryUI();
+        renderAgendaView();
+
+        // Scroll to top of window to see confirmation
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      /* ------------------------------------------------------------------------
+         11. VIEW NAVIGATION & EVENT WIRING
+         ------------------------------------------------------------------------ */
+      function switchView(targetViewId) {
+        state.activeView = targetViewId;
+
+        dom.navTabBtns.forEach(btn => {
+          if (btn.getAttribute('data-view') === targetViewId) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+        dom.viewPanels.forEach(panel => {
+          if (panel.id === targetViewId) {
+            panel.classList.add('active');
+          } else {
+            panel.classList.remove('active');
+          }
+        });
+
+        if (targetViewId === 'agendaView') {
+          renderAgendaView();
+        } else if (targetViewId === 'hoursView') {
+          renderHoursTable();
+        }
+      }
+
+      function setupEventListeners() {
+        // Nav Tabs
+        dom.navTabBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const view = btn.getAttribute('data-view');
+            switchView(view);
+          });
+        });
+
+        // Close Banner
+        dom.messageBannerClose.addEventListener('click', hideBanner);
+
+        // Date selection changes
+        dom.bookingDate.addEventListener('change', () => {
+          state.selectedTimeSlot = null;
+          updateSlotsUI();
+          updateSummaryUI();
+        });
+
+        // Preferred Barber changes
+        dom.preferredBarber.addEventListener('change', () => {
+          state.selectedTimeSlot = null;
+          updateSlotsUI();
+          updateSummaryUI();
+        });
+
+        // Preferred Window changes
+        dom.preferredWindow.addEventListener('change', () => {
+          updateSlotsUI();
+        });
+
+        // Preference checkboxes
+        document.querySelectorAll('input[name="prefTags"]').forEach(cb => {
+          cb.addEventListener('change', updateSummaryUI);
+        });
+
+        // Name & Phone inputs for live summary & button enablement
+        dom.clientName.addEventListener('input', updateSummaryUI);
+        dom.clientPhone.addEventListener('input', updateSummaryUI);
+
+        // Form Submit
+        dom.bookingForm.addEventListener('submit', handleBookingSubmit);
+
+        // Agenda Filters
+        dom.agendaFilterDate.addEventListener('change', renderAgendaView);
+        dom.agendaFilterBarber.addEventListener('change', renderAgendaView);
+
+        // Reset demo data
+        dom.resetDemoDataBtn.addEventListener('click', () => {
+          if (confirm('Reset appointments to default demo roster?')) {
+            localStorage.removeItem(STORAGE_KEY);
+            seedSampleAppointments();
+            renderAgendaView();
+            updateSlotsUI();
+            updateBadgeCounters();
+            showBanner('info', 'Demo schedule restored to default roster.', '🔄');
+          }
+        });
+      }
+
+      /* ------------------------------------------------------------------------
+         12. APP INITIALIZATION
+         ------------------------------------------------------------------------ */
+      function init() {
+        loadAppointments();
+        
+        // Default booking date: today if open, else tomorrow if today is Monday
+        const todayStr = getTodayDateString();
+        const initialDate = isShopOpenOnDate(todayStr) ? todayStr : getTomorrowDateString();
+        
+        dom.bookingDate.value = initialDate;
+        dom.agendaFilterDate.value = initialDate;
+        
+        renderServices();
+        renderHoursTable();
+        updateLiveShopStatus();
+        updateBadgeCounters();
+        updateSlotsUI();
+        updateSummaryUI();
+        renderAgendaView();
+        setupEventListeners();
+
+        // Refresh shop status badge every minute
+        setInterval(updateLiveShopStatus, 60000);
+      }
+
+      // Start on page load
+      window.addEventListener('DOMContentLoaded', init);
+    })();
+  </script>
+</body>
+</html>
